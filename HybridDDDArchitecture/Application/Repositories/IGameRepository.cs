@@ -10,11 +10,11 @@ namespace Infrastructure.Repositories
     /// <summary>
     /// Implementación del repositorio de juegos
     /// </summary>
-    public class GameRepository : BaseRepository<Domain.Entities.Game>, IGameRepository
+    public class IGameRepository : BaseRepository<Domain.Entities.Game>, Application.Repositories.IGameRepository
     {
-        private readonly ILogger<GameRepository> _logger;
+        private readonly ILogger<IGameRepository> _logger;
 
-        public GameRepository(GameDbContext context, ILogger<GameRepository> logger)
+        public IGameRepository(GameDbContext context, ILogger<IGameRepository> logger)
             : base(context)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

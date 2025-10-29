@@ -11,11 +11,11 @@ namespace Infrastructure.Repositories
     /// <summary>
     /// Implementación del repositorio de intentos
     /// </summary>
-    public class AttemptRepository : BaseRepository<Attempt>, IAttemptRepository
+    public class IAttemptRepository : BaseRepository<Attempt>, Application.Repositories.IAttemptRepository
     {
-        private readonly ILogger<AttemptRepository> _logger;
+        private readonly ILogger<IAttemptRepository> _logger;
 
-        public AttemptRepository(GameDbContext context, ILogger<AttemptRepository> logger)
+        public IAttemptRepository(GameDbContext context, ILogger<IAttemptRepository> logger)
             : base(context)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

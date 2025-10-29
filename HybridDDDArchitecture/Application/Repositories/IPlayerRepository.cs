@@ -11,11 +11,11 @@ namespace Infrastructure.Repositories
     /// <summary>
     /// Implementación del repositorio de jugadores
     /// </summary>
-    public class PlayerRepository : BaseRepository<Player>, IPlayerRepository
+    public class IPlayerRepository : BaseRepository<Player>, Application.Repositories.IPlayerRepository
     {
-        private readonly ILogger<PlayerRepository> _logger;
+        private readonly ILogger<IPlayerRepository> _logger;
 
-        public PlayerRepository(GameDbContext context, ILogger<PlayerRepository> logger)
+        public IPlayerRepository(GameDbContext context, ILogger<IPlayerRepository> logger)
             : base(context)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
