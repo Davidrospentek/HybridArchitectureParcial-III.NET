@@ -1,4 +1,4 @@
-﻿using Application.ApplicationServices;
+﻿using Application.Services;
 using Core.Application;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Application.Registrations
 {
     /// <summary>
-    /// Aqui se deben registrar todas las dependencias de la capa de aplicacion
+    /// Registro de servicios de la capa de aplicación para el juego Picas y Famas
     /// </summary>
     public static class ApplicationServicesRegistration
     {
@@ -15,31 +15,14 @@ namespace Application.Registrations
             /* Automapper */
             services.AddAutoMapper(config => config.AddMaps(Assembly.GetExecutingAssembly()));
 
-            /* EventBus */
-            services.AddPublishers();
-            services.AddSubscribers();
-
-            /* MediatR*/
+            /* MediatR - Command/Query Bus */
             services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddScoped<ICommandQueryBus, MediatrCommandQueryBus>();
 
             /* Application Services */
-            services.AddScoped<IDummyEntityApplicationService, DummyEntityApplicationService>();
+            services.AddScoped<ISecretNumberGenerator, SecretNumberGenerator>();
+            services.AddScoped<IGuessValidator, GuessValidator>();
 
-            return services;
-        }
-
-        private static IServiceCollection AddPublishers(this IServiceCollection services)
-        {
-            //Aqui se registran los handlers que publican en el bus de eventos
-            services.AddTransient<IIntegrationEventHandler<DummyEntityCreatedIntegrationEvent>, DummyEntityCreatedIntegrationEventHandlerPub>();
-            return services;
-        }
-
-        private static IServiceCollection AddSubscribers(this IServiceCollection services)
-        {
-            //Aqui se registran los handlers que se suscriben al bus de eventos
-            services.AddTransient<DummyEntityCreatedIntegrationEventHandlerSub>();
             return services;
         }
     }

@@ -17,6 +17,8 @@
 
 	<ItemGroup>
 		<Folder Include="Adapters\" />
+		<Folder Include="UseCases\Game\Queries\GetPlayerById\" />
+		<Folder Include="UseCases\Game\Queries\GetGameStats\" />
 	</ItemGroup>
 
 	<ItemGroup>

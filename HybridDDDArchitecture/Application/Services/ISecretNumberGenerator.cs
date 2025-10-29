@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Services
+﻿namespace Application.Services
 {
-    internal class ISecretNumberGenerator
+    /// <summary>
+    /// Servicio para generar números secretos aleatorios de 4 dígitos únicos
+    /// </summary>
+    public interface ISecretNumberGenerator
     {
+        /// <summary>
+        /// Genera un número secreto de 4 dígitos sin repetir
+        /// </summary>
+        /// <returns>String con 4 dígitos únicos</returns>
+        string Generate();
     }
 }

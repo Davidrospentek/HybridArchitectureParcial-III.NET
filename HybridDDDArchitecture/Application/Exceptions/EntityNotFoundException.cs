@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Exceptions
+﻿namespace Application.Exceptions
 {
-    internal class EntityNotFoundException
+    /// <summary>
+    /// Excepción lanzada cuando no se encuentra una entidad solicitada
+    /// </summary>
+    public class EntityNotFoundException : Exception
     {
+        public EntityNotFoundException(string message)
+            : base(message)
+        {
+        }
     }
 }

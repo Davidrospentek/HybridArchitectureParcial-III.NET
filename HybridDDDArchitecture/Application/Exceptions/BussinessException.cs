@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Exceptions
+﻿namespace Application.Exceptions
 {
-    public class BussinessException
+    /// <summary>
+    /// Excepción para errores de lógica de negocio
+    /// </summary>
+    public class BussinessException : Exception
     {
+        public BussinessException(string message)
+            : base(message)
+        {
+        }
+
+        public BussinessException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }

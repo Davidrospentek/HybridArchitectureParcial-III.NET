@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Services
+﻿namespace Application.Services
 {
-    internal class IGuessValidator
+    /// <summary>
+    /// Servicio para validar intentos de adivinanza usando GuessCore
+    /// </summary>
+    public interface IGuessValidator
     {
+        /// <summary>
+        /// Valida un intento de adivinanza comparándolo con el número secreto
+        /// </summary>
+        /// <param name="secretNumber">Número secreto del juego</param>
+        /// <param name="attemptedNumber">Número intentado por el jugador</param>
+        /// <returns>Mensaje con las pistas (famas y picas)</returns>
+        string Validate(string secretNumber, string attemptedNumber);
     }
 }

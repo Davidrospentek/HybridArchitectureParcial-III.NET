@@ -1,42 +1,47 @@
 ﻿using Application.Repositories;
-using Core.Application;
-using Core.Infraestructure;
-using Domain.Others.Utils;
-using Infrastructure.Constants;
-using Infrastructure.Factories;
+using Infrastructure.Persistence;
+using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Client;
-using MongoDB.Bson.Serialization.Conventions;
-using static Domain.Enums.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Registrations
 {
     /// <summary>
-    /// Aqui se deben registrar todas las dependencias de la capa de infraestructura
+    /// Registro de servicios de infraestructura para el juego Picas y Famas
     /// </summary>
-    public static class InfraestructureServicesRegistration
+    public static class InfrastructureServicesRegistration
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             /* Database Context */
-            services.AddRepositories(configuration);
+            services.AddDatabaseContext(configuration);
 
-            /* EventBus */
-            services.AddEventBus(configuration);
-
-            /* Adapters */
-            services.AddSingleton<IExternalApiClient, ExternalApiHttpAdapter>();
+            /* Repositories */
+            services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<IGameRepository, GameRepository>();
+            services.AddScoped<IAttemptRepository, AttemptRepository>();
 
             return services;
         }
 
-        private static IServiceCollection AddRepositories(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)
         {
-            string dbType = configuration["Configurations:UseDatabase" ?? throw new NullReferenceException(InfrastructureConstants.DATABASE_TYPE_NOT_CONFIGURED)];
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            services.CreateDataBase(dbType, configuration);
+            services.AddDbContext<GameDbContext>((serviceProvider, options) =>
+            {
+                options.UseSqlServer(connectionString);
+
+                // Habilitar logging detallado en desarrollo
+                var logger = serviceProvider.GetService<ILogger<GameDbContext>>();
+                if (logger != null)
+                {
+                    options.LogTo(message => logger.LogInformation(message));
+                }
+            });
 
             return services;
         }

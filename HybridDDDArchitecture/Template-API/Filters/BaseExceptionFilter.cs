@@ -1,76 +1,93 @@
-﻿using Controllers;
+﻿using Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Filters
 {
     /// <summary>
-    /// Clase base para el manejo de excepciones. Modificar solo si es requerido
+    /// Filtro global para manejo de excepciones en la API
     /// </summary>
     public class BaseExceptionFilter : IExceptionFilter
     {
+        private readonly ILogger<BaseExceptionFilter> _logger;
+
+        public BaseExceptionFilter(ILogger<BaseExceptionFilter> logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public void OnException(ExceptionContext context)
         {
-            //generamos el mensaje de error
-            HttpResponse response = context.HttpContext.Response;
-            response.StatusCode = (int)GetErrorCode(context.Exception.GetType());
-            response.ContentType = "application/json";
+            _logger.LogError(context.Exception, "Exception caught in BaseExceptionFilter: {Message}",
+                context.Exception.Message);
 
-            string resultMessage = context.Exception.Message;
-            string errorCode = Guid.NewGuid().ToString();
-
-            var result = new ObjectResult(new HttpMessageResult()
+            switch (context.Exception)
             {
-                Success = false,
-                Data = string.Empty,
-                Message = IsManagedException(context.Exception) ? resultMessage : "His operation could not be completed. try again later. Error Code (" + errorCode + ").",
-                Code = errorCode,
-                StatusCode = response.StatusCode
-            });
-            context.Result = result;
-        }
+                case InvalidEntityDataException invalidEntityEx:
+                    _logger.LogWarning("Invalid entity data: {Errors}", invalidEntityEx.GetErrorMessages());
+                    context.Result = new BadRequestObjectResult(new
+                    {
+                        success = false,
+                        message = invalidEntityEx.GetErrorMessages(),
+                        code = "INVALID_ENTITY_DATA",
+                        statusCode = 400
+                    });
+                    context.ExceptionHandled = true;
+                    break;
 
-        private HttpStatusCode GetErrorCode(Type exceptionType)
-        {
-            Exceptions IsException;
-            if (Enum.TryParse(exceptionType.Name, out IsException))
-            {
-                switch (IsException)
-                {
-                    case Exceptions.ArgumentNullException:
-                        return HttpStatusCode.LengthRequired;
+                case EntityDoesExistException entityExistsEx:
+                    _logger.LogWarning("Entity already exists: {Message}", entityExistsEx.Message);
+                    context.Result = new BadRequestObjectResult(new
+                    {
+                        success = false,
+                        message = entityExistsEx.Message,
+                        code = "ENTITY_ALREADY_EXISTS",
+                        statusCode = 400
+                    });
+                    context.ExceptionHandled = true;
+                    break;
 
-                    case Exceptions.BussinessException:
-                    case Exceptions.EntityDoesExistException:
-                    case Exceptions.InvalidEntityDataException:
-                        return HttpStatusCode.BadRequest;
+                case EntityNotFoundException notFoundEx:
+                    _logger.LogWarning("Entity not found: {Message}", notFoundEx.Message);
+                    context.Result = new NotFoundObjectResult(new
+                    {
+                        success = false,
+                        message = notFoundEx.Message,
+                        code = "ENTITY_NOT_FOUND",
+                        statusCode = 404
+                    });
+                    context.ExceptionHandled = true;
+                    break;
 
-                    case Exceptions.EntityDoesNotExistException:
-                        return HttpStatusCode.NotFound;
+                case BussinessException businessEx:
+                    _logger.LogWarning("Business rule violation: {Message}", businessEx.Message);
+                    context.Result = new BadRequestObjectResult(new
+                    {
+                        success = false,
+                        message = businessEx.Message,
+                        code = "BUSINESS_RULE_VIOLATION",
+                        statusCode = 400
+                    });
+                    context.ExceptionHandled = true;
+                    break;
 
-                    default:
-                        return HttpStatusCode.InternalServerError;
-                }
+                default:
+                    _logger.LogError(context.Exception, "Unhandled exception: {Message}",
+                        context.Exception.Message);
+                    context.Result = new ObjectResult(new
+                    {
+                        success = false,
+                        message = "Ocurrió un error interno en el servidor",
+                        code = "INTERNAL_SERVER_ERROR",
+                        statusCode = 500
+                    })
+                    {
+                        StatusCode = 500
+                    };
+                    context.ExceptionHandled = true;
+                    break;
             }
-            else
-            {
-                return HttpStatusCode.InternalServerError;
-            }   
         }
-
-        private bool IsManagedException(Exception ex)
-        {
-            return ex is ApplicationException;
-        }
-    }
-
-    public enum Exceptions
-    {
-        ArgumentNullException,
-        BussinessException,
-        EntityDoesExistException,
-        EntityDoesNotExistException,
-        InvalidEntityDataException
     }
 }
